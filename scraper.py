@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument("-oN", help="Output scopes to a text file")
 parser.add_argument("-oJ", help="Output programs to a json file")
 parser.add_argument("-a", "--all", help="Scrape all programs on the site")
-parser.add_argument("-u", "--url", help="Specify the url for a single program on the site")
+parser.add_argument("-u", "--url", nargs="+", help="Specify url(s) for program(s) on the site")
 parser.add_argument("-p", "--page", default=1, type=int, help="Which page to start at")
 parser.add_argument("-n", "--number", default=10, type=int, help="The number of programs to scrape")
 args = vars(parser.parse_args())
@@ -20,13 +20,14 @@ programs = []
 data = {"start": (args["page"] - 1) * 50}
 
 if args["url"]:
-    r = requests.get(args["url"])
-    if r.status_code != 200:
-        print("[-] URL provided is not correct, exiting")
-        exit(1)
-    program = {}
-    program["url"] = args["url"]
-    programs.append(program)
+    for url in args["url"]:
+        r = requests.get(url)
+        if r.status_code != 200:
+            print("[-] URL provided is not correct, exiting")
+            exit(1)
+        program = {}
+        program["url"] = url
+        programs.append(program)
 else:
     r = requests.post("https://www.openbugbounty.org/bugbounty-list/ajax.php", data=data)
     for index, page in enumerate(r.json()["data"]):
